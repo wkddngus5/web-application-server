@@ -53,6 +53,10 @@ public class HttpRequestUtils {
         return getKeyValue(header, ": ");
     }
 
+    public static int findContentsLength(Pair headerPair) {
+    	return Integer.parseInt(headerPair.getValue());
+    }
+    
     public static class Pair {
         String key;
         String value;
@@ -69,6 +73,11 @@ public class HttpRequestUtils {
         public String getValue() {
             return value;
         }
+        
+        public boolean hasSameKey(String key) {
+        	return this.key.equals(key);
+        }
+        
 
         @Override
         public int hashCode() {

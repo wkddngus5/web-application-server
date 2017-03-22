@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import model.User;
 import util.HttpRequestUtils.Pair;
 
 public class HttpRequestUtilsTest {
@@ -70,4 +71,29 @@ public class HttpRequestUtilsTest {
         Pair pair = HttpRequestUtils.parseHeader(header);
         assertThat(pair, is(new Pair("Content-Length", "59")));
     }
+    
+    @Test
+    public void parseQueryString_invalid2() {
+        String queryString = "userId=id&password=pass&name=name&email=a%40a";
+        Map<String, String> parameters = HttpRequestUtils.parseQueryString(queryString);
+        assertThat(parameters.get("userId"), is("id"));
+        assertThat(parameters.get("password"), is("pass"));
+        assertThat(parameters.get("name"), is("name"));
+        assertThat(parameters.get("email"), is("a%40a"));
+        
+    }
+    
+    @Test
+    public void createUser() {
+    	String queryString = "userId=id&password=pass&name=name&email=a%40a";
+    	Map<String, String> parameters = HttpRequestUtils.parseQueryString(queryString);
+    	assertThat(parameters.get("userId"), is("id"));
+    	assertThat(parameters.get("password"), is("pass"));
+    	assertThat(parameters.get("name"), is("name"));
+    	assertThat(parameters.get("email"), is("a%40a"));
+    	
+    	System.out.println(new User(parameters.get("userId"), parameters.get("password"), parameters.get("name"), parameters.get("email")));
+    	
+    }
+   
 }
