@@ -74,7 +74,6 @@ public class RequestHandler extends Thread {
 			DataOutputStream dos = new DataOutputStream(out);
 
 			if (requestLine.contains("GET")) {
-
 				if (url.equals("/user/list")) {
 					if (cookieMap.get("logined").equals("true")) {
 						body = DataBase.findAll().toString().getBytes();
@@ -89,6 +88,7 @@ public class RequestHandler extends Thread {
 						}
 					}
 				} else {
+					log.debug("url: {}", url);
 					body = Files.readAllBytes(new File("./webapp" + url).toPath());					
 				}
 			}
@@ -126,8 +126,6 @@ public class RequestHandler extends Thread {
 							log.error(e.getMessage());
 						}
 					}
-					log.debug(loginUser.toString());
-
 					try {
 						dos.writeBytes("HTTP/1.1 302 Found \r\n");
 						dos.writeBytes("Location: /index.html\r\n");
@@ -136,11 +134,9 @@ public class RequestHandler extends Thread {
 					} catch (IOException e) {
 						log.error(e.getMessage());
 					}
-
 					log.debug("login!!!");
 				}
 			}
-
 			if (values[1].contains("css")) {
 				response200HeaderCss(dos, body.length);
 				responseBody(dos, body);

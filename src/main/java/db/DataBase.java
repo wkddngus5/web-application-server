@@ -27,8 +27,11 @@ public class DataBase {
     }
     
     public static User makeTestUser() {
-    	User uesr1 = new User("a", "a", "a", "a");
+    	User uesr1 = new User("a", "a", "a", "a@a");
     	addUser(uesr1);
+    	
+    	User uesr2 = new User("b", "b", "b", "b@b");
+    	addUser(uesr2);
     	System.out.println("CREATE NEW USER: "+ uesr1.toString());
 		return null;
     }

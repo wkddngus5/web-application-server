@@ -27,7 +27,7 @@
 
 ### 요구사항 4 - redirect 방식으로 이동
 * reponse status line에 status code '200'은 response body의 file path를 읽어 html파일을 가져오고,
-status code '300'은 response header의 Location경로에 있는 html파일을 redirect해준다. 
+status code '302'은 response header의 Location경로에 있는 html파일을 redirect해준다. 
 
 ### 요구사항 5 - cookie
 * response header Set-Cookie에 name=value형식으로 응답해준다. 
