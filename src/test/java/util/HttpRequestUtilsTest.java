@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import db.DataBase;
 import model.User;
 import util.HttpRequestUtils.Pair;
 
@@ -93,7 +94,23 @@ public class HttpRequestUtilsTest {
     	assertThat(parameters.get("email"), is("a%40a"));
     	
     	System.out.println(new User(parameters.get("userId"), parameters.get("password"), parameters.get("name"), parameters.get("email")));
-    	
+    }
+    
+    @Test
+    public void cookieParser() {
+    	String header = "logined=true";
+    	Map<String, String> cookieMap; 
+    	cookieMap = HttpRequestUtils.parseCookies(header);
+    	System.out.println(cookieMap);
+    	assertThat(cookieMap.get("logined"), is("true"));
+    }
+    
+    @Test
+    public void dbTest() {
+    	User user = new User("a", "a", "a", "a@a");
+    	DataBase.addUser(user);
+    	User findUser = DataBase.findUserById("a");
+    	assertThat(findUser.getPassword(), is("a"));
     }
    
 }

@@ -15,22 +15,26 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
-* 
+* Http서버가 브라우저에서 요청한 Request line, Request header를 파싱하여 method, url 등을 확인한다.
+* 서버는 요청에 대한 처리를 완료한 후 status line을 포함한 response를 만들어 client에게 응답해준다.
 
 ### 요구사항 2 - get 방식으로 회원가입
-* 
+* client가 Get방식으로 request를 보내면 server는 '?'구분 된 URL 뒷 부분에 담긴 변수를 따로 처리할 수 있다.
 
 ### 요구사항 3 - post 방식으로 회원가입
-* 
+* Get방식은 url에 기록이 남기 때문에 Post방식을 통해 reqeust line이 아닌 reqeust body에 데이터를 담아 전송한다.
+* request body는 request header에서 blank 한 줄 다음에 시작한다.
 
 ### 요구사항 4 - redirect 방식으로 이동
-* 
+* reponse status line에 status code '200'은 response body의 file path를 읽어 html파일을 가져오고,
+status code '300'은 response header의 Location경로에 있는 html파일을 redirect해준다. 
 
 ### 요구사항 5 - cookie
-* 
+* response header Set-Cookie에 name=value형식으로 응답해준다. 
 
 ### 요구사항 6 - stylesheet 적용
-* 
+* html, css, js등 각각의 파일은 서로 다른 포트를 통해서 차례대로 주고 받는다.
+* response header에 'Content-Type: text/css'로 응답해주면 브라우저는 css파일로 인식한다(html은 text/html).
 
 ### heroku 서버에 배포 후
 * 

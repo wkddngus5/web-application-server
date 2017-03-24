@@ -56,6 +56,7 @@ public class RequestHandler extends Thread {
 			String line = br.readLine();
 			int contentsLength = 0;
 			Pair headerPair;
+			Map<String, String> cookieMap = null;
 
 			while (!line.equals("")) {
 				headerPair = HttpRequestUtils.parseHeader(line);
@@ -63,19 +64,39 @@ public class RequestHandler extends Thread {
 				if (headerPair.hasSameKey("Content-Length")) {
 					contentsLength = HttpRequestUtils.findContentsLength(headerPair);
 				}
+				if (headerPair.hasSameKey("Cookie")) {
+					cookieMap = HttpRequestUtils.parseCookies(headerPair.getValue());
+				}
 				line = br.readLine();
 			}
+			log.debug("헤더 분석 끝.");
 
 			DataOutputStream dos = new DataOutputStream(out);
 
 			if (requestLine.contains("GET")) {
-				body = Files.readAllBytes(new File("./webapp" + url).toPath());
+
+				if (url.equals("/user/list")) {
+					if (cookieMap.get("logined").equals("true")) {
+						body = DataBase.findAll().toString().getBytes();
+					} else {
+						try {
+							dos.writeBytes("HTTP/1.1 302 Found \r\n");
+							dos.writeBytes("Location: /user/login.html\r\n");
+							dos.writeBytes("Set-Cookie: logined=false\r\n");
+							dos.writeBytes("\r\n");
+						} catch (IOException e) {
+							log.error(e.getMessage());
+						}
+					}
+				} else {
+					body = Files.readAllBytes(new File("./webapp" + url).toPath());					
+				}
 			}
 
 			if (requestLine.contains("POST")) {
 				String requestBody = IOUtils.readData(br, contentsLength);
 				log.debug("body: {}", requestBody);
-				
+
 				if (url.equals("/user/create")) {
 					Map<String, String> parameters = HttpRequestUtils.parseQueryString(requestBody);
 					User user = new User(parameters.get("userId"), parameters.get("password"), parameters.get("name"),
@@ -87,11 +108,15 @@ public class RequestHandler extends Thread {
 					responseBody(dos, body);
 					return;
 				}
-				
+
 				if (url.equals("/user/login")) {
 					Map<String, String> parameters = HttpRequestUtils.parseQueryString(requestBody);
-					User loginUser = DataBase.findUserById(parameters.get("userId"));
-					if(loginUser == null) {
+					User loginUser = null;
+					try {
+						loginUser = DataBase.findUserById(parameters.get("userId"));
+					} catch (NullPointerException e) {
+					}
+					if(loginUser == null || !loginUser.checkPassword(parameters.get("password"))) {
 						try {
 							dos.writeBytes("HTTP/1.1 302 Found \r\n");
 							dos.writeBytes("Location: /user/login_failed.html\r\n");
@@ -101,20 +126,19 @@ public class RequestHandler extends Thread {
 							log.error(e.getMessage());
 						}
 					}
-					
+					log.debug(loginUser.toString());
+
 					try {
 						dos.writeBytes("HTTP/1.1 302 Found \r\n");
 						dos.writeBytes("Location: /index.html\r\n");
-						dos.writeBytes("Set-Cookie: logined=ture\r\n");
+						dos.writeBytes("Set-Cookie: logined=true\r\n");
 						dos.writeBytes("\r\n");
 					} catch (IOException e) {
 						log.error(e.getMessage());
 					}
-					
+
 					log.debug("login!!!");
 				}
-				
-
 			}
 
 			if (values[1].contains("css")) {

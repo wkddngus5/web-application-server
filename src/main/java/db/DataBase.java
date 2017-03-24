@@ -25,4 +25,11 @@ public class DataBase {
     public static Collection<User> findAll() {
         return users.values();
     }
+    
+    public static User makeTestUser() {
+    	User uesr1 = new User("a", "a", "a", "a");
+    	addUser(uesr1);
+    	System.out.println("CREATE NEW USER: "+ uesr1.toString());
+		return null;
+    }
 }
