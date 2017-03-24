@@ -74,6 +74,9 @@ public class RequestHandler extends Thread {
 			DataOutputStream dos = new DataOutputStream(out);
 
 			if (requestLine.contains("GET")) {
+				if (url.equals("/")) {
+					url = "/index.html";
+				}
 				if (url.equals("/user/list")) {
 					if (cookieMap.get("logined").equals("true")) {
 						body = DataBase.findAll().toString().getBytes();
