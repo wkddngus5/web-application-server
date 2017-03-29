@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import db.DataBase;
+import model.HttpRequest;
 import model.User;
 import util.HttpRequestUtils;
 import util.HttpRequestUtils.Pair;
@@ -37,43 +38,14 @@ public class RequestHandler extends Thread {
 
 		try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
 			// TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-			String requestLine = br.readLine();
-
-			if (requestLine == null) {
-				return;
-			}
-
-			byte[] body = "Hello World".getBytes();
-
-			log.debug("request line : {}", requestLine);
-			log.debug("find: {}", requestLine);
-
-			String[] values = requestLine.split(" |\\?");
-			log.debug("find path: {}", values[1]);
-			String url = values[1];
-
-			String line = br.readLine();
-			int contentsLength = 0;
-			Pair headerPair;
-			Map<String, String> cookieMap = null;
-
-			while (!line.equals("")) {
-				headerPair = HttpRequestUtils.parseHeader(line);
-				log.debug("header: {}", headerPair.getKey() + ":" + headerPair.getValue());
-				if (headerPair.hasSameKey("Content-Length")) {
-					contentsLength = HttpRequestUtils.findContentsLength(headerPair);
-				}
-				if (headerPair.hasSameKey("Cookie")) {
-					cookieMap = HttpRequestUtils.parseCookies(headerPair.getValue());
-				}
-				line = br.readLine();
-			}
-			log.debug("헤더 분석 끝.");
+			HttpRequest request = new HttpRequest(in);
+			byte[] body = null;
 
 			DataOutputStream dos = new DataOutputStream(out);
-
-			if (requestLine.contains("GET")) {
+			String url = request.getPath();
+			Map<String, String> cookieMap = request.getCookieMap();
+			
+			if (request.getMethod().equals("GET")) {
 				if (url.equals("/")) {
 					url = "/index.html";
 				}
@@ -96,14 +68,10 @@ public class RequestHandler extends Thread {
 				}
 			}
 
-			if (requestLine.contains("POST")) {
-				String requestBody = IOUtils.readData(br, contentsLength);
-				log.debug("body: {}", requestBody);
+			if (request.getMethod().equals("POST")) {
 
 				if (url.equals("/user/create")) {
-					Map<String, String> parameters = HttpRequestUtils.parseQueryString(requestBody);
-					User user = new User(parameters.get("userId"), parameters.get("password"), parameters.get("name"),
-							parameters.get("email"));
+					User user = request.getUser();
 					DataBase.addUser(user);
 
 					log.debug("CREATE USER: {}", user.toString());
@@ -113,13 +81,12 @@ public class RequestHandler extends Thread {
 				}
 
 				if (url.equals("/user/login")) {
-					Map<String, String> parameters = HttpRequestUtils.parseQueryString(requestBody);
 					User loginUser = null;
 					try {
-						loginUser = DataBase.findUserById(parameters.get("userId"));
+						loginUser = DataBase.findUserById(request.getParameter("userId"));
 					} catch (NullPointerException e) {
 					}
-					if(loginUser == null || !loginUser.checkPassword(parameters.get("password"))) {
+					if(loginUser == null || !loginUser.checkPassword(request.getParameter("password"))) {
 						try {
 							dos.writeBytes("HTTP/1.1 302 Found \r\n");
 							dos.writeBytes("Location: /user/login_failed.html\r\n");
@@ -140,7 +107,7 @@ public class RequestHandler extends Thread {
 					log.debug("login!!!");
 				}
 			}
-			if (values[1].contains("css")) {
+			if (request.getPath().contains("css")) {
 				response200HeaderCss(dos, body.length);
 				responseBody(dos, body);
 				return;
